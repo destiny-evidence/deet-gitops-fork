@@ -137,6 +137,52 @@ def _citation_fields_from_annotation(
     return format_parsed_citations(parse_eppi_citations_from_details(details))
 
 
+def _verbatim_fuzzy_match_pct(verbatim: str | None, context: str | None) -> float:
+    """
+    Return a 0-100 score for how much of ``verbatim`` appears in ``context``.
+
+    Uses :func:`rapidfuzz.fuzz.partial_ratio` (substring-style overlap).
+
+    Args:
+        verbatim: Human or model snippet (e.g. ``additional_text``).
+        context: Document text used for comparison.
+
+    Returns:
+        Float in ``[0.0, 100.0]``, or ``0.0`` if either input is empty.
+
+    """
+    v = (verbatim or "").strip()
+    c = (context or "").strip()
+    if not v or not c:
+        return 0.0
+    return float(fuzz.partial_ratio(v, c))
+
+
+def _document_context_for_grounding(
+    doc_gs: object,
+    doc_llm: object | None,
+) -> str | None:
+    """
+    Prefer the gold document's context; fall back to the LLM document's if missing.
+
+    Args:
+        doc_gs: Gold standard annotated document (has ``.document``).
+        doc_llm: Matching LLM document, or ``None``.
+
+    Returns:
+        Context string, or ``None`` if neither side provides one.
+
+    """
+    c = getattr(getattr(doc_gs, "document", None), "context", None)
+    if c:
+        return str(c)
+    if doc_llm is not None:
+        c2 = getattr(getattr(doc_llm, "document", None), "context", None)
+        if c2:
+            return str(c2)
+    return None
+
+
 class GoldStandardLLMEvaluator:
     """
     A class to manage the evaluation of LLM-extracted data against
