@@ -162,7 +162,6 @@ def _verbatim_fuzzy_match_pct(verbatim: str | None, context: str | None) -> floa
     if not v or not c:
         return 0.0
     if len(v) < _VERBATIM_FUZZ_SHORT_LEN and v.isdecimal():
-        # Avoid partial_ratio's tendency to over-score tiny strings in long text.
         if re.search(
             r"(?<![0-9])" + re.escape(v) + r"(?![0-9])",
             c,
@@ -172,6 +171,32 @@ def _verbatim_fuzzy_match_pct(verbatim: str | None, context: str | None) -> floa
     if len(v) < _VERBATIM_FUZZ_SHORT_LEN:
         return 100.0 if v in c else float(fuzz.partial_ratio(v, c))
     return float(fuzz.partial_ratio(v, c))
+
+
+def _find_gold_annotation_for_attribute(
+    annotated: GoldStandardAnnotatedDocument,
+    attribute: Attribute,
+) -> GoldStandardAnnotation | None:
+    """Return the real gold annotation for ``attribute``, or None if not present."""
+    for ann in annotated.annotations:
+        if ann.attribute.attribute_id == attribute.attribute_id:
+            return ann
+    return None
+
+
+def _eppi_full_text_details_colon_separated(annotation: object) -> str:
+    """
+    Colon-join all non-empty ``Text`` values from ``item_attribute_full_text_details``.
+
+    Non-EPPI annotations (no list on the model) yield an empty string.
+    """
+    details = getattr(annotation, "item_attribute_full_text_details", None) or []
+    parts: list[str] = []
+    for d in details:
+        text = getattr(d, "text", None)
+        if text is not None and str(text).strip():
+            parts.append(str(text).strip())
+    return ": ".join(parts)
 
 
 class GoldStandardLLMEvaluator:
