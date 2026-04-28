@@ -27,7 +27,9 @@ from deet.data_models.eppi import (
     EppiGoldStandardAnnotation,
     EppiRawData,
 )
-from deet.processors.linker import DocumentReferenceLinker
+from deet.processors.eppi_additional_text_mapping import (
+    eppi_output_data_from_eppi_fields,
+)
 
 
 class ProcessedAttributeData[AttributeT: Attribute](BaseModel):

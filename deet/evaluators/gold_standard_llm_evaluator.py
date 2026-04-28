@@ -18,7 +18,6 @@ from rich.table import Table
 
 from deet.data_models.base import Attribute, GoldStandardAnnotation
 from deet.data_models.documents import (
-    GoldStandardAnnotatedDocument,
     GoldStandardAnnotatedDocumentList,
 )
 from deet.data_models.evaluation import AttributeMetric
@@ -171,17 +170,6 @@ def _verbatim_fuzzy_match_pct(verbatim: str | None, context: str | None) -> floa
     if len(v) < _VERBATIM_FUZZ_SHORT_LEN:
         return 100.0 if v in c else float(fuzz.partial_ratio(v, c))
     return float(fuzz.partial_ratio(v, c))
-
-
-def _find_gold_annotation_for_attribute(
-    annotated: GoldStandardAnnotatedDocument,
-    attribute: Attribute,
-) -> GoldStandardAnnotation | None:
-    """Return the real gold annotation for ``attribute``, or None if not present."""
-    for ann in annotated.annotations:
-        if ann.attribute.attribute_id == attribute.attribute_id:
-            return ann
-    return None
 
 
 def _eppi_full_text_details_colon_separated(annotation: object) -> str:
