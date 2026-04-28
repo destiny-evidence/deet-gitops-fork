@@ -478,8 +478,10 @@ class EppiAnnotationConverter(AnnotationConverter):
             attribute.attribute_label = attribute_id_to_label[attribute_id]
 
         additional_text = str(annotation.get("AdditionalText", "") or "")
-        typed_raw_data: EppiRawDataValue = eppi_output_data_from_eppi_fields(
-            attribute.output_data_type, additional_text=additional_text
+        typed_raw_data: bool | str | int | float | list[Any] | dict[str, Any] = (
+            eppi_output_data_from_eppi_fields(
+                attribute.output_data_type, additional_text=additional_text
+            )
         )
 
         return EppiGoldStandardAnnotation(
