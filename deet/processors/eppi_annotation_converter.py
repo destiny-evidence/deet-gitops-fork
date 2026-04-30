@@ -220,11 +220,21 @@ def eppi_output_data_from_eppi_fields(
     additional_text: str,
 ) -> EppiRawDataValue:
     """
-    Map EPPI ``Codes`` row evidence onto typed ``raw_data`` for coerced ``output_data``.
+    Map EPPI evidence onto typed ``raw_data`` for coerced ``output_data``.
 
-    A row in ``References[].Codes`` means the reviewer applied that code (e.g. ticked
-    the checkbox). For boolean attributes, that application is ``True`` even when
-    ``AdditionalText`` is empty.
+    **Glossary**
+
+    - **Codes:** Rows under ``References[].Codes`` in EPPI export JSON. Each row
+      means the reviewer applied that code for the reference (e.g. ticked a box).
+    - **raw_data:** The value stored on ``GoldStandardAnnotation`` before / during
+      coercion to the Python type implied by the attribute.
+    - **output_data:** The coerced, typed value used in evaluation (derived from
+      ``raw_data``). For EPPI ingest, booleans reflect **code presence**; other types
+      come from the ``AdditionalText`` field.
+
+    A Code row exists means the attribute was applied. For boolean attributes that is
+    ``True`` even when ``AdditionalText`` is empty (the checkbox alone carries the
+    positive annotation).
 
     For every non-boolean type, only the info-box ``AdditionalText`` is used.
     ``ItemAttributeFullTextDetails`` is not used for the stored value (it may still be
@@ -236,7 +246,8 @@ def eppi_output_data_from_eppi_fields(
 
     Returns:
         Value to store in ``GoldStandardAnnotation.raw_data`` (then coerced via
-        ``output_data``).
+        ``output_data``). Never ``None``; see module-level note on
+        ``EppiRawDataValue``.
 
     """
     additional = (additional_text or "").strip()
