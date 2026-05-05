@@ -360,6 +360,7 @@ class DocumentReferenceLinker:
         self.documents_references = references
 
         # lookup dicts for O(1) id & author_year based lookup
+        logger.debug("populating _references_by_id lookup...")
         self._references_by_id: dict[int, Document] = {
             doc.document_identity.document_id: doc  # type:ignore[union-attr]
             for doc in tmp_refs

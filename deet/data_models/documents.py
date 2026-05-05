@@ -85,6 +85,7 @@ class DocumentIdentity(BaseModel):
 
     document_id: int | None = None
     document_id_source: DocumentIDSource | None = None
+    # external_id: str | int | None = None
     external_id: str | int | None = None
 
     # parsed citation info
