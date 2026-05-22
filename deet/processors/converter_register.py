@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 
 SUPPORTED_EXTENSIONS: set[str] = {".csv", ".json"}
 
+SUPPORTED_EXTENSIONS: set[str] = {".csv", ".json"}
+
 
 class SupportedImportFormat(StrEnum):
     """Supported formats to import gold standard annotation data from."""
