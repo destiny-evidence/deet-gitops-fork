@@ -18,6 +18,7 @@ from rich.table import Table
 
 from deet.data_models.base import Attribute, GoldStandardAnnotation
 from deet.data_models.documents import (
+    GoldStandardAnnotatedDocument,
     GoldStandardAnnotatedDocumentList,
 )
 from deet.data_models.evaluation import AttributeMetric
