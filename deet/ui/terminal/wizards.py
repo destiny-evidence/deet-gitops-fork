@@ -318,6 +318,7 @@ def run_model_wizard[T: BaseModel](
         answers[f_name] = result
         index += 1
 
+    answers.update(prefill)
     return model_class.model_validate(answers)
 
 

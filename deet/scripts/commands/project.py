@@ -1,6 +1,7 @@
 # ruff: noqa: PLC0415
 """Sub-commands for project initialisation and configuration."""
 
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated
 
