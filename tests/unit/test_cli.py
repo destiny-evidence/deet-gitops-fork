@@ -12,7 +12,6 @@ from deet.data_models.project import DeetProject
 from deet.extractors.llm_data_extractor import DataExtractionConfig
 from deet.processors.converter_register import SupportedImportFormat
 from deet.scripts.cli import app
-from deet.scripts.commands.project import slugify
 from deet.scripts.typer_context import CLIState, project_required
 from deet.settings import DataExtractionSettings
 from deet.utils.text import slugify

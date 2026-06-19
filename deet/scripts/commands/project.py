@@ -1,7 +1,6 @@
 # ruff: noqa: PLC0415
 """Sub-commands for project initialisation and configuration."""
 
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Annotated
 
@@ -55,23 +54,6 @@ def init(
     create_project(
         root, root.name, data_path=data_path, data_type=data_type, pdf_dir=pdf_dir
     )
-
-
-def _prompt_name() -> str:
-    """Prompt for a project name."""
-    from deet.data_models.project import DeetProject
-
-    info = DeetProject.model_fields["name"]
-    ui = get_ui_metadata(info)
-    if ui is None:
-        no_ui = "No UI component for name"
-        raise ValueError(no_ui)
-    ui_help = ui.help + (
-        ". The name you enter will be standardised and used to create a directory"
-    )
-    console.clear()
-    console.print(wizard_field_help("name", ui_help))
-    return str(inquire_pydantic_field(DeetProject, "name", info, ui))
 
 
 @app.command()
