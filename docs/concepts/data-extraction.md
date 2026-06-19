@@ -84,6 +84,9 @@ Default evaluation uses exact-match `accuracy` on string `output_data`, plus
 `edit_distance_match_rate` for near matches; see
 [Evaluation](evaluation.md#metrics-by-attribute-type).
 
+!!! Warning "Not fully supported"
+    string attributes are only partially covered by standard evaluation metrics
+
 ### float
 
 Float attributes describe any type of numeric data extraction elements, such as the average age of study participants, or the effect size or standard error.
