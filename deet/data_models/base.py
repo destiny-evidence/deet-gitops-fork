@@ -4,7 +4,7 @@ import csv
 from collections.abc import Callable, Iterator
 from enum import StrEnum, auto
 from pathlib import Path
-from typing import Any, Literal, Never, TypeVar
+from typing import Any, Literal, Never, TypeVar, cast
 
 from loguru import logger
 from pydantic import (
