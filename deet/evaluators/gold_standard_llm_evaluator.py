@@ -173,8 +173,13 @@ def _verbatim_fuzzy_match_pct(
         Float in ``[0.0, 100.0]``, or ``0.0`` if either input is empty.
 
     """
-    normalized_snippet = (snippet_text or "").strip()
-    normalized_context = (document_context or "").strip()
+    # Preserve case for grounding: PDF context and snippets should match as written.
+    normalized_snippet = normalize_string_for_match(
+        snippet_text or "", case_insensitive=False
+    )
+    normalized_context = normalize_string_for_match(
+        document_context or "", case_insensitive=False
+    )
     if not normalized_snippet or not normalized_context:
         return 0.0
     # Short all-numeric snippet: require a standalone number, not a substring of digits.
@@ -217,6 +222,17 @@ def _eppi_full_text_details_colon_separated(annotation: object) -> str:
         if text is not None and str(text).strip():
             parts.append(str(text).strip())
     return ": ".join(parts)
+
+
+def _citation_fields_from_annotation(annotation: object) -> tuple[str, str]:
+    """
+    Parse EPPI citation markup into ``(citation_page, citation_highlight_text)``.
+
+    Non-EPPI annotations (no ``item_attribute_full_text_details``) yield empty
+    strings. Multiple detail entries are joined with ``": "``.
+    """
+    details = getattr(annotation, "item_attribute_full_text_details", None)
+    return format_parsed_citations(parse_eppi_citations_from_details(details))
 
 
 class GoldStandardLLMEvaluator:
