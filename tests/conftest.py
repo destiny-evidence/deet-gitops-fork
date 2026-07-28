@@ -14,6 +14,7 @@ from deet.settings import get_settings
 
 from deet.processors.converter_register import SupportedImportFormat
 from deet.processors.parser import ParsedOutput
+from deet.settings import get_settings
 
 
 @pytest.fixture
