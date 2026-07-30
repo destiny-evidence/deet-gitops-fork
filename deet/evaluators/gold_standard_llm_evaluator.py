@@ -231,7 +231,7 @@ def _citation_fields_from_annotation(annotation: object) -> tuple[str, str]:
     Non-EPPI annotations (no ``item_attribute_full_text_details``) yield empty
     strings. Multiple detail entries are joined with ``": "``.
     """
-    details = getattr(annotation, "item_attribute_full_text_details", None)
+    details = getattr(annotation, "item_attribute_full_text_details", None) or []
     return format_parsed_citations(parse_eppi_citations_from_details(details))
 
 
