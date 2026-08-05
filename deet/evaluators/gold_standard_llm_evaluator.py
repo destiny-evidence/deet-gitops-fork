@@ -136,6 +136,104 @@ def _citation_fields_from_annotation(
     details = getattr(annotation, "item_attribute_full_text_details", None) or []
     return format_parsed_citations(parse_eppi_citations_from_details(details))
 
+# Default for ``short_snippet_max_len``: snippets shorter than this (in characters)
+# use stricter matching—digit-boundary checks for all-numeric snippets, else
+# substring or partial fuzzy—so tiny phrases are not scored like full sentences.
+_DEFAULT_SHORT_SNIPPET_MAX_LEN = 4
+
+
+def _verbatim_fuzzy_match_pct(
+    snippet_text: str | None,
+    document_context: str | None,
+    *,
+    short_snippet_max_len: int = _DEFAULT_SHORT_SNIPPET_MAX_LEN,
+) -> float:
+    """
+    Score how well a short verbatim snippet is grounded in document text.
+
+    Compares **snippet_text** (needle, e.g. EPPI or LLM ``additional_text``) against
+    **document_context** (haystack, usually the LLM annotated document's ``context``).
+    Returns a 0-100 similarity-style score.
+
+    For snippets at least ``short_snippet_max_len`` characters long, uses
+    :func:`rapidfuzz.fuzz.partial_ratio` (best local alignment in the long context).
+    For shorter **all-numeric** snippets (e.g. counts like ``"32"``), uses a stricter
+    number-boundary regex so a small number is not conflated with digits inside a
+    larger run (e.g. ``"321"``). For other short snippets, prefers substring match,
+    else partial ratio.
+
+    Args:
+        snippet_text: Verbatim snippet to locate (e.g. human or model
+            ``additional_text``).
+        document_context: Full document text to search within.
+        short_snippet_max_len: Character length below which the snippet is treated as
+            "short" for the stricter heuristics described above.
+
+    Returns:
+        Float in ``[0.0, 100.0]``, or ``0.0`` if either input is empty.
+
+    """
+    # Preserve case for grounding: PDF context and snippets should match as written.
+    normalized_snippet = normalize_string_for_match(
+        snippet_text or "", case_insensitive=False
+    )
+    normalized_context = normalize_string_for_match(
+        document_context or "", case_insensitive=False
+    )
+    if not normalized_snippet or not normalized_context:
+        return 0.0
+    # Short all-numeric snippet: require a standalone number, not a substring of digits.
+    if (
+        len(normalized_snippet) < short_snippet_max_len
+        and normalized_snippet.isdecimal()
+    ):
+        if re.search(
+            r"(?<![0-9])" + re.escape(normalized_snippet) + r"(?![0-9])",
+            normalized_context,
+        ):
+            return 100.0
+        return 0.0
+    # Other short snippets: exact substring is full credit; else partial fuzzy match.
+    if len(normalized_snippet) < short_snippet_max_len:
+        return (
+            100.0
+            if normalized_snippet in normalized_context
+            else float(
+                fuzz.partial_ratio(normalized_snippet, normalized_context),
+            )
+        )
+    return float(fuzz.partial_ratio(normalized_snippet, normalized_context))
+
+
+def _eppi_full_text_details_colon_separated(annotation: object) -> str:
+    """
+    Join all non-empty ``Text`` values from ``item_attribute_full_text_details``.
+
+    EPPI may attach several fragments; for CSV export we concatenate them into one
+    cell using ``": "`` as a readable separator (not an EPPI-native format—avoids
+    commas inside the cell and keeps the column single-valued).
+
+    Non-EPPI annotations (no list on the model) yield an empty string.
+    """
+    details = getattr(annotation, "item_attribute_full_text_details", None) or []
+    parts: list[str] = []
+    for d in details:
+        text = getattr(d, "text", None)
+        if text is not None and str(text).strip():
+            parts.append(str(text).strip())
+    return ": ".join(parts)
+
+
+def _citation_fields_from_annotation(annotation: object) -> tuple[str, str]:
+    """
+    Parse EPPI citation markup into ``(citation_page, citation_highlight_text)``.
+
+    Non-EPPI annotations (no ``item_attribute_full_text_details``) yield empty
+    strings. Multiple detail entries are joined with ``": "``.
+    """
+    details = getattr(annotation, "item_attribute_full_text_details", None) or []
+    return format_parsed_citations(parse_eppi_citations_from_details(details))
+
 
 class GoldStandardLLMEvaluator:
     """

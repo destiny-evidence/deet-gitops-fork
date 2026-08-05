@@ -159,6 +159,113 @@ def eppi_output_data_from_eppi_fields(
     raise UnsupportedEppiAttributeTypeError(output_data_type)
 
 
+
+def _parse_eppi_integer(
+    additional_text: str,
+    output_data_type: AttributeType,
+) -> EppiRawDataValue:
+    """Parse EPPI ``AdditionalText`` as an integer, or return the missing default."""
+    if not additional_text:
+        return output_data_type.missing_annotation_default()
+    try:
+        return int(float(additional_text))
+    except ValueError:
+        return output_data_type.missing_annotation_default()
+
+
+def _parse_eppi_float(
+    additional_text: str,
+    output_data_type: AttributeType,
+) -> EppiRawDataValue:
+    """Parse EPPI ``AdditionalText`` as a float, or return the missing default."""
+    if not additional_text:
+        return output_data_type.missing_annotation_default()
+    try:
+        return float(additional_text.replace(",", ""))
+    except ValueError:
+        return output_data_type.missing_annotation_default()
+
+
+def _parse_eppi_json_container(
+    additional_text: str,
+    output_data_type: AttributeType,
+) -> EppiRawDataValue:
+    """Parse EPPI ``AdditionalText`` as the expected JSON list or dict."""
+    if not additional_text:
+        return output_data_type.missing_annotation_default()
+
+    try:
+        parsed: Any = json.loads(additional_text)
+    except (json.JSONDecodeError, TypeError):
+        return output_data_type.missing_annotation_default()
+
+    py_type = output_data_type.to_python_type()
+    if isinstance(parsed, py_type):
+        return cast("EppiRawDataValue", parsed)
+
+    return output_data_type.missing_annotation_default()
+
+
+EPPI_ADDITIONAL_TEXT_PARSERS: dict[AttributeType, EppiAdditionalTextParser] = {
+    AttributeType.INTEGER: _parse_eppi_integer,
+    AttributeType.FLOAT: _parse_eppi_float,
+    AttributeType.LIST: _parse_eppi_json_container,
+    AttributeType.DICT: _parse_eppi_json_container,
+}
+
+
+def eppi_output_data_from_eppi_fields(
+    output_data_type: AttributeType,
+    *,
+    additional_text: str,
+) -> EppiRawDataValue:
+    """
+    Map EPPI evidence onto typed ``raw_data`` for coerced ``output_data``.
+
+    **Glossary**
+
+    - **Codes:** Rows under ``References[].Codes`` in EPPI export JSON. Each row
+      means the reviewer applied that code for the reference (e.g. ticked a box).
+    - **raw_data:** The value stored on ``GoldStandardAnnotation`` before / during
+      coercion to the Python type implied by the attribute.
+    - **output_data:** The coerced, typed value used in evaluation (derived from
+      ``raw_data``). For EPPI ingest, booleans reflect **code presence**; other types
+      come from the ``AdditionalText`` field.
+
+    A Code row exists means the attribute was applied. For boolean attributes that is
+    ``True`` even when ``AdditionalText`` is empty (the checkbox alone carries the
+    positive annotation).
+
+    For every non-boolean type, only the info-box ``AdditionalText`` is used.
+    ``ItemAttributeFullTextDetails`` is not used for the stored value (it may still be
+    attached to the model for other uses).
+
+    Args:
+        output_data_type: Target attribute type (from codeset or prompt CSV).
+        additional_text: EPPI ``AdditionalText`` / info-box value.
+
+    Returns:
+        Value to store in ``GoldStandardAnnotation.raw_data`` (then coerced via
+        ``output_data``). Never ``None``; see module-level note on
+        ``EppiRawDataValue``.
+
+    """
+    additional = (additional_text or "").strip()
+
+    if output_data_type == AttributeType.BOOL:
+        return True
+    if output_data_type == AttributeType.STRING:
+        return additional
+
+    try:
+        parser = EPPI_ADDITIONAL_TEXT_PARSERS[output_data_type]
+    except KeyError as err:
+        unsupported = f"Unsupported AttributeType for EPPI mapping: {output_data_type}"
+        raise ValueError(unsupported) from err
+
+    return parser(additional, output_data_type)
+
+
 class EppiAnnotationConverter(AnnotationConverter):
     """
     A class to convert raw EPPI-Reviewer JSON annotations
