@@ -2,6 +2,55 @@
 
 <!-- version list -->
 
+## v0.3.0-dev.1 (2026-08-26)
+
+### Bug Fixes
+
+- Add a trivial change ([#10](https://github.com/destiny-evidence/deet-gitops-fork/pull/10),
+  [`6977912`](https://github.com/destiny-evidence/deet-gitops-fork/commit/6977912d862177384372d46e9645f2f463923f5c))
+
+- Restore integration tests compatibility with aiohttp 3.9+
+  ([`53cd818`](https://github.com/destiny-evidence/deet-gitops-fork/commit/53cd8185211de4d494260575fe264f185200ff01))
+
+- Restrict python to <3.14 to prevent pillow dependency issues; upgrade litellm to ensure locked
+  version has pre-built wheel
+  ([`e9bf55d`](https://github.com/destiny-evidence/deet-gitops-fork/commit/e9bf55de342bfbccb8c07316a2bdf4bc5232bfa2))
+
+### Chores
+
+- Apply suggestions from code review
+  ([`40b5f01`](https://github.com/destiny-evidence/deet-gitops-fork/commit/40b5f01d9bb50edd1c33a1596b1c19e44ed12143))
+
+### Continuous Integration
+
+- Add cross-platform installation matrix tests
+  ([`fd1435e`](https://github.com/destiny-evidence/deet-gitops-fork/commit/fd1435e1cf49db6c6289f0eaedff456fc167f11a))
+
+- Add proposed fix for python-semantic-release
+  ([#11](https://github.com/destiny-evidence/deet-gitops-fork/pull/11),
+  [`3318484`](https://github.com/destiny-evidence/deet-gitops-fork/commit/33184849d98ee828ddd17fafe71768a33b8d336c))
+
+- Fix uv build during semantic-release
+  ([#12](https://github.com/destiny-evidence/deet-gitops-fork/pull/12),
+  [`3a16c40`](https://github.com/destiny-evidence/deet-gitops-fork/commit/3a16c40b1edc427ca1d5872e70be03a148d8e589))
+
+- Ignore config for semantic release build
+  ([`0a99d39`](https://github.com/destiny-evidence/deet-gitops-fork/commit/0a99d39bfbdd236fb8c43cb8a757798adb0dc666))
+
+### Documentation
+
+- Update installation instructions with warning to update uv version
+  ([`a1b4e7c`](https://github.com/destiny-evidence/deet-gitops-fork/commit/a1b4e7c9263cf6355f52b83b354bc7cb55a8f23c))
+
+### Testing
+
+- Bump timeout on integration test project init
+  ([`f2653bd`](https://github.com/destiny-evidence/deet-gitops-fork/commit/f2653bdb9b512219be3440d8bd875ebec1d761b1))
+
+- Fix flaky project init test.
+  ([`0915af9`](https://github.com/destiny-evidence/deet-gitops-fork/commit/0915af92fada14f71e32bad60300a23d51524f46))
+
+
 ## v0.2.2 (2026-07-31)
 
 ### Bug Fixes
